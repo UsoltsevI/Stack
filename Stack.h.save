@@ -1,0 +1,23 @@
+#ifndef STACK_H_INCLUDED
+#define STACK_H_INCLUDED
+
+#include <stdio.h>
+#define stack_dumb(stk) stack_dumb(stk, __LINE__, __FILE__, __func__)
+#define print_error(
+typedef int Elent
+
+struct int_stack {
+
+    Elent *data;
+    size_t a;
+    size_t copacity;
+}
+
+struct stack_error {
+
+    err_comp = 0;
+}
+
+int stack_dump(int_stack *stk, char *line, char *file, char *func);
+
+#endif // STACK_H_INCLUDED
