@@ -2,90 +2,102 @@
 
 int main() {
 
+    struct_stack stk = {};
+    //stack_ok(&stk);
+    stack_push(&stk, 4);
+    stack_push(&stk, 48);
+    stack_push(&stk, 6);
+    stack_dump(&stk);
+    printf("%d\n", stack_pop(&stk));
+    //stack_dump(&stk);
+
     return 0;
 }
 
-int stack_dump(int_stack *stk, char *line, char *file, char *func, stack_error err) {
+void stack_dump_d(struct_stack *stk, int line, const char *file, const char *func) {
 
-    printf("copacity = %d\n", stk->copacity);
-    printf("a = %d\n", stk->a);
+    C(ORANGE);
 
-    printf("data[%d]:\n\t{\n", &data);
-    C(GRAY);
+    printf("At the file %s at the function %s at the line %d:\n\t{\n", file, func, line);
+
+    printf("\t copacity = %d\n", stk->copacity);
+    printf("\t a = %d\n", stk->a);
+    printf("\t data = %d\n", stk->data);
+    printf("\t data[%d]:\n\t\t{\n", &stk->data);
+
     for (size_t i = 0; i < stk->copacity; i++)
-        printf("\t\t*[%d] = %d\n", i, stk->data[i]);
+        printf("\t\t *[%d] = %d\n", i, stk->data[i]);
+    printf("\t\t}\n\t}\n\n");
+
     C(WHITE);
-    printf("\t}\n}\n");
 }
 
-stack_error stack_ok(int *stk) {
+int stack_ok(struct_stack *stk) {
 
-    size_t result = 0, rate = 1;
+    int result = 0, rate = 1;
 
-    C(RED);
+    check_error(stk == NULL);
 
-    if (stk == NULL) {
-        result += rate;
-        printf("stk == NULL");
-    }
+    check_error(stk->copacity < 0);
 
-    rate *= 2;
-    if (stk->copacity == NULL) {
-        result += rate;
-        printf("stk->copacity == NULL");
-    }
+    check_error(stk->a < 0);
 
-    rate *= 2;
-    if (stk->copacity < 0) {
-        result += rate;
-        printf("stk->copacity < 0");
-    }
+    check_error(stk->copacity < stk->a);
 
-    rate *= 2;
-    if (stk->a == NULL) {
-        result += rate;
-        printf("stk->a == NULL");
-    }
-
-    rate *= 2;
-    if (stk->a < 0) {
-        result += rate;
-        printf("stk->a < 0");
-    }
-
-    rate *= 2;
-    if (stk->data == NULL) {
-        result += rate;
-        printf("stk->data == NULL");
-    }
-
-    C(WHITE);
+    check_error(stk->data == NULL);
 
     return result;
 }
 
-int stack_push(int_stack *stk, Elent value) {
+void stack_push(struct_stack *stk, Elent value) {
 
-    if (stack_ok(&stk))
-        stack_dumb(&stk);
+    if (stk->copacity != 0)
+        if (stack_ok(stk))
+            stack_dump(stk);
 
     if (stk->a >= stk->copacity) {
 
-        stk->copasuty = str->copasity * 2;
+        if (stk->copacity <= 0)
+            stk->copacity = 1;
 
-        stk->data = (Elent *) recalloc(stk->data, str->copasity * sizeof(Elent));
+        stk->copacity = stk->copacity * 2;
+
+        stk->data = (Elent *) realloc(stk->data, stk->copacity * sizeof(Elent));
+
+        if (stk->data == NULL)
+            printf("realloc failed if file %s in func %s at line %d\n",
+                    __FILE__, __func__, __LINE__ - 4);
     }
 
-    str->data[str->a++] = value;
+    if (stack_ok(stk))
+        stack_dump(s
+    stk->data[stk->a++] = value;
 }
 
-int stack_pop(int_stack *stk, Elent x) {
 
-    if (stack_ok(&stk))
-        stack_dumb(&stk);
-        
-    if (stk->a
+Elent stack_pop(struct_stack *stk) {
 
+    if (stack_ok(stk))
+        stack_dump(stk);
 
+    if (stk->a < stk->copacity / 2) {
+
+        stk->copacity = stk->copacity / 2;
+
+        free(stk->data + stk->copacity);
+    }
+
+    Elent result = 0;
+
+    if (stk->a > 0) {
+        result = stk->data[--stk->a];
+        stk->data[stk->a] = 0;
+
+    } else {
+        result = stk->data[stk->a];
+        stk->data[stk->a] = 0;
+    }
+
+    return result;
 }
 
