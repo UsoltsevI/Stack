@@ -2,22 +2,44 @@
 #define STACK_H_INCLUDED
 
 #include <stdio.h>
-#define stack_dumb(stk) stack_dumb(stk, __LINE__, __FILE__, __func__)
-#define print_error(
-typedef int Elent
+#include <malloc.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <time.h>
+#include "color.h"
 
-struct int_stack {
 
+typedef int Elent;
+typedef long long canary_hash_t;
+
+struct struct_stack {
+
+    canary_hash_t left_c;
     Elent *data;
     size_t a;
     size_t copacity;
-}
+    int def_line;
+    char *name_stk;
+    char *def_file_name;
+    char *def_func_name;
+    long long coef;
+    canary_hash_t hash_ptr;
+    canary_hash_t right_c;
+};
 
-struct stack_error {
+void stack_dump_d(struct_stack *stk, int line, const char *file, const char *func);
+int stack_ok(struct_stack *stk);
+void stack_push(struct_stack *stk, Elent value);
+Elent stack_pop(struct_stack *stk);
+int stack_dtor(struct_stack *stk);
+int stack_ctor_d(struct_stack *stk, int line , char *file, char *func);
 
-    err_comp = 0;
-}
+#define stack_dump(stk) stack_dump_d(stk, __LINE__, __FILE__, __func__)
+#define stack_ctor(stk) stack_ctor_d(struct_stack *stk, # __LINE__ , __FILE__, __func__)
+#define check_error(a)  if (a) { \
+                            result += rate; \
+                        } \
+                        rate *= 2;
 
-int stack_dump(int_stack *stk, char *line, char *file, char *func);
 
 #endif // STACK_H_INCLUDED
