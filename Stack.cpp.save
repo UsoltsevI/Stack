@@ -1,5 +1,10 @@
 #include "Stack.h"
 
+#ifndef debugon
+    #define debugon //для удобства чтения
+#endif
+
+
 #ifdef debugon
 
 static void stack_dump_d(struct_stack *stk, int line, const char *file, const char *func);
@@ -18,54 +23,63 @@ static size_t num_stk_c = 0;
 
 static void stack_dump_d(struct_stack *stk, int line, const char *file, const char *func) {
 
-    C(ORANGE);
-    printf("At the file %s at the function %s at the line %d:\n\t{\n", file, func, line);
+    if (stk == NULL) {
+        printf("At stack_dump_d stk == NULL!!!\n");
+    }
+    } else {
 
-    printf("\t struct_stack %s, defined in file %s in func %s at line %d:\n",
-            stk->name_stk, stk->def_file_name, stk->def_func_name, stk->def_line);
+        printf("At the file %s at the function %s at the line %d:\n\t{\n", file, func, line);
 
-    printf("\t copacity = %d\n",     stk->copacity);
-    printf("\t a = %d\n",            stk->a);
-    printf("\t data = %d\n",         stk->data);
-    printf("\t data[%p]:\n\t\t{\n", &stk->data);
+        printf("stk->is_dtor = %d\n", stk->is_dtor);
+        printf("stk->is_ctor = %d\n", stk->is_ctor);
 
-    for (size_t i = 0; i < stk->copacity; i++)
-        printf("\t\t *[%d] = %d\n", i, stk->data[i]);
+        printf("\t struct_stack %s, defined in file %s in func %s at line %d:\n",
+                stk->name_stk, stk->def_file_name, stk->def_func_name, stk->def_line);
 
-    printf("\t\t}\n\t}\n\n");
+        printf("\t copacity = %d\n",     stk->copacity);
+        printf("\t a = %d\n",            stk->a);
+        printf("\t data = %d\n",         stk->data);
+        printf("\t data[%p]:\n\t\t{\n", &stk->data);
 
-    int check = -1;
+        for (size_t i = 0; i < stk->copacity; i++)
+            printf("\t\t *[%d] = %d\n", i, stk->data[i]);
 
-    for (int i = 0; i < num_stk_c; i++) {
-        if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
-            check = i;
-            break;
+        printf("\t\t}\n\t}\n\n");
+
+        int check = -1;
+
+        for (int i = 0; i < num_stk_c; i++) {
+            if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
+                check = i;
+                break;
+            }
+        }
+
+        if (check == -1) {
+
+            printf("check == -1 at line %d in func %s in file %s\n", __LINE__, __func__, __FILE__);
+            printf("stk->name_stk = %s\n", stk->name_stk);
+
+            for (int i = 0; i < num_stk_c; i++)
+                printf("stk_c_name[%d] = %s\n", i, stk_c_name[i]);
+
+        } else {
+
+            printf("But stk_c has following parameters:\n");
+
+            printf("\t stk_c[%d].copacity = %d\n",       check,  stk_c[check].copacity);
+            printf("\t stk_c[%d].a = %d\n",              check,  stk_c[check].a);
+            printf("\t stk_c[%d].data = %d\n",           check,  stk_c[check].data);
+            printf("\t stk_c[%d].addres_data:\n\t\t{\n", check,  stk_c[check].addres_data);
+            printf("\t stk_c[%d].is_ctor:\n\t\t{\n",     check,  stk_c[check].is_ctor);
+            printf("\t stk_c[%d].is_dtor:\n\t\t{\n",     check,  stk_c[check].is_dtor);
+
+            for (size_t i = 0; i < stk->copacity; i++)
+                printf("\t\t stk_c[%d].data[%d] = %d\n", check, i, stk_c[check].data[i]);
+
+            printf("\t\t}\n\t}\n\n");
         }
     }
-
-    if (check == -1) {
-
-        printf("check == -1 at line %d in func %s in file %s\n", __LINE__, __func__, __FILE__);
-        printf("stk->name_stk = %s\n", stk->name_stk);
-
-        for (int i = 0; i < num_stk_c; i++)
-            printf("stk_c_name[%d] = %s\n", i, stk_c_name[i]);
-    }
-
-    C(LBLUE);
-    printf("But stk_c has following parameters:\n");
-
-    printf("\t stk_c[%d].copacity = %d\n",     stk_c[check].copacity);
-    printf("\t stk_c[%d].a = %d\n",            stk_c[check].a);
-    printf("\t stk_c[%d].data = %d\n",         stk_c[check].data);
-    printf("\t stk_c[%d].data[%p]:\n\t\t{\n", &stk_c[check].data);
-
-    for (size_t i = 0; i < stk->copacity; i++)
-        printf("\t\t stk_c[%d].data[%d] = %d\n", check, i, stk_c[check].data[i]);
-
-    printf("\t\t}\n\t}\n\n");
-
-    C(WHITE);
 }
 
 #endif
@@ -75,42 +89,47 @@ int stack_ok(struct_stack *stk) {
     int result = 0;
 
     check_error(stk == NULL);
-    check_error(stk->data == NULL);
-    check_error(stk->a > stk->copacity);
+
+    if (stk != NULL) {
+        check_error(stk->data == NULL);
+        check_error(stk->a > stk->copacity);
 
 #ifdef debugon
 
-    int check = -1;
+        check_error(stk->is_dtor == 1);
+        int check = -1;
 
-    for (int i = 0; i < num_stk_c; i++) {
-        if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
-            check = i;
-            break;
+        for (int i = 0; i < num_stk_c; i++) {
+            if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
+                check = i;
+                break;
+            }
         }
-    }
 
-    if (check == -1) {
-        printf("check == -1 at line %d in func %s in file %s\n", __LINE__, __func__, __FILE__);
-        printf("stk->name_stk = %s\n", stk->name_stk);
+        if (check == -1) {
+            printf("check == -1 at line %d in func %s in file %s\n", __LINE__, __func__, __FILE__);
+            printf("stk->name_stk = %s\n", stk->name_stk);
 
-        for (int i = 0; i < num_stk_c; i++)
-            printf("stk_c_name[%d] = %s\n", i, stk_c_name[i]);
-    }
+            for (int i = 0; i < num_stk_c; i++)
+                printf("stk_c_name[%d] = %s\n", i, stk_c_name[i]);
 
-    check_error(stk->def_line      != stk_c[check].def_line     );
-    check_error(stk->def_file_name != stk_c[check].def_file_name);
-    check_error(stk->def_func_name != stk_c[check].def_func_name);
-    check_error(stk->name_stk      != stk_c[check].name_stk     );
-    check_error(stk->a             != stk_c[check].a            );
-    check_error(stk->copacity      != stk_c[check].copacity     );
+        } else {
 
-    for (size_t i = 0; i < stk->copacity; i++)
-        check_error(stk->data[i] != stk_c[check].data[i]);
+        check_error(stk->def_line      != stk_c[check].def_line     );
+        check_error(stk->def_file_name != stk_c[check].def_file_name);
+        check_error(stk->def_func_name != stk_c[check].def_func_name);
+        check_error(stk->name_stk      != stk_c[check].name_stk     );
+        check_error(stk->a             != stk_c[check].a            );
+        check_error(stk->copacity      != stk_c[check].copacity     );
 
-    if (result != 0)
-        printf("stack_ok failed\n");
+        for (size_t i = 0; i < stk->copacity; i++)
+            check_error(stk->data[i] != stk_c[check].data[i]);
 
+        if (result != 0)
+            printf("stack_ok failed\n");
+        }
 #endif
+    }
 
     return result;
 }
@@ -118,12 +137,9 @@ int stack_ok(struct_stack *stk) {
 void stack_push(struct_stack *stk, Elent value) {
 
 #ifdef debugon
-    if ((stk->copacity != 0) || (stk == NULL))
-        if (stack_ok(stk)) {
-            stack_dump(stk);
-    }
+    if (stack_ok(stk))
+        stack_dump(stk);
 #endif
-
 
     if (stk->a >= stk->copacity) {
 
@@ -133,11 +149,14 @@ void stack_push(struct_stack *stk, Elent value) {
 
         stk->copacity = stk->copacity * 2;
 
-        stk->data = (Elent *) realloc(stk->data, stk->copacity * sizeof(Elent));
+        Elent *helper = (Elent *) realloc(stk->data, stk->copacity * sizeof(Elent));
 
-        if (stk->data == NULL)
+        if (helper == NULL) {
             printf("realloc failed if file %s in func %s at line %d\n",
                     __FILE__, __func__, __LINE__ - 4);
+        } else {
+            stk->data = helper;
+        }
     }
 
     stk->data[stk->a++] = value;
@@ -161,7 +180,7 @@ Elent stack_pop(struct_stack *stk) {
 
         stk->copacity = stk->copacity / 2;
 
-        free(stk->data + stk->copacity);
+        stk->data = (Elent *) realloc(stk->data, sizeof(Elent) * stk->copacity);
     }
 
     Elent result = 0;
@@ -171,8 +190,7 @@ Elent stack_pop(struct_stack *stk) {
         stk->data[stk->a] = 0;
 
     } else {
-        result = stk->data[stk->a];
-        stk->data[stk->a] = 0;
+        printf("You are trying to pop from empty stack!!!\n");
     }
 
 #ifdef debugon
@@ -185,6 +203,10 @@ Elent stack_pop(struct_stack *stk) {
 int stack_dtor(struct_stack *stk) {
 
 #ifdef debugon
+    if (stack_ok(stk)) {
+        stack_dump(stk);
+        return -1;
+    }
 
     int check = -1;
 
@@ -218,6 +240,7 @@ int stack_dtor(struct_stack *stk) {
     stk->def_line = 0;
     stk->def_file_name = NULL;
     stk->def_func_name = NULL;
+    stk->is_dtor = 1;
 
     if (check > -1) {
         stk_c[check].def_file_name = NULL;
@@ -285,47 +308,58 @@ int stack_ctor_d(struct_stack *stk, const char *name_stk, const int line, const 
 
 static int create_check_stack(struct_stack *stk) {
 
-    int check = -1;
-    for (int i = 0; i < num_stk_c; i++) {
-        if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
-            check = i;
-            break;
-        }
-    }
-
-    if (check == -1) {
-        num_stk_c++;
-        check = num_stk_c - 1;
-        stk_c_name =  (char * *) realloc(stk_c_name, num_stk_c * sizeof(char *));
-
-        /*if (check == 0) {
-            stk_c[0] = (struct_stack) calloc(1, sizeof(struct_stack));
-        } else { */
-            stk_c = (struct_stack *) realloc(stk_c,      num_stk_c * sizeof(struct_stack));
-        //}
-        stk_c_name[check] = (char *) calloc(strlen(stk->name_stk) + 1, sizeof(char));
-        stk_c_name[check] = (char *) stk->name_stk;
-
-        if ((stk_c_name == NULL) || (stk_c == NULL))
-            return -1;
-    }
-
-    stk_c[check].name_stk      = stk->name_stk;
-    stk_c[check].def_line      = stk->def_line;
-    stk_c[check].def_file_name = stk->def_file_name;
-    stk_c[check].def_func_name = stk->def_func_name;
-    stk_c[check].a             = stk->a;
-    stk_c[check].copacity      = stk->copacity;
-
-    stk_c[check].data = (Elent *) calloc(stk_c[check].copacity, sizeof(Elent));
-
-    if (stk_c[check].data == NULL)
+    if (stack_ok(stk)) {
+        stack_dump(s;
         return -1;
 
-    for (size_t i = 0; i < stk_c[check].copacity; i++)
-        stk_c[check].data[i] = stk->data[i];
-    //
-    
+    } else {
+
+        stk_c[check].is_ctor = stk->is_ctor;
+        stk_c[check].is_dtor = stk->is_dtor;
+
+        int check = -1;
+        for (int i = 0; i < num_stk_c; i++) {
+            if (stack_str_cmp(stk_c_name[i], stk->name_stk) == 0) {
+                check = i;
+                break;
+            }
+        }
+
+        if (check == -1) {
+            num_stk_c++;
+            check = num_stk_c - 1;
+            stk_c_name =  (char * *) realloc(stk_c_name, num_stk_c * sizeof(char *));
+
+            stk_c = (struct_stack *) realloc(stk_c,      num_stk_c * sizeof(struct_stack));
+            stk_c_name[check] = (char *) calloc(strlen(stk->name_stk) + 1, sizeof(char));
+            stk_c_name[check] = (char *) stk->name_stk;
+
+            if ((stk_c_name == NULL) || (stk_c == NULL))
+                return -1;
+        }
+
+        stk_c[check].name_stk      = stk->name_stk;
+        stk_c[check].def_line      = stk->def_line;
+        stk_c[check].def_file_name = stk->def_file_name;
+        stk_c[check].def_func_name = stk->def_func_name;
+        stk_c[check].a             = stk->a;
+        stk_c[check].copacity      = stk->copacity;
+        stk_c[check].addres_data   = &stk->data;
+
+        Elent *helper = (Elent *) calloc(stk_c[check].copacity, sizeof(Elent));
+
+        if (helper == NULL) {
+            return -1;
+
+        } else {
+            stk_c[check].data = helper;
+        }
+
+        for (size_t i = 0; i < stk_c[check].copacity; i++)
+            stk_c[check].data[i] = stk->data[i];
+
+    }
+
     return 0;
 }
 

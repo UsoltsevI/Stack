@@ -5,8 +5,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <time.h>
-#include "color.h"
+#include <string.h>
 
 #define debugon  //detector for debug version
 
@@ -24,6 +23,9 @@ struct struct_stack {
     const char *name_stk;
     const char *def_file_name;
     const char *def_func_name;
+    Elent * *addres_data;
+    bool is_dtor;
+    bool is_ctor;
 
 #endif
 
